@@ -46,12 +46,13 @@ anova.ltm <-
         if (conditionalLR == TRUE) {
             cs <- coef(object2)[, 1]
             sens <-
-                c(as.numeric(as.character(paste("1e-", 1:8, sep = ""))), 0)
+                c(as.numeric(as.character(paste( "1e-", 1:8, sep = "" ))), 0)
             p_values <- data.frame("Sensibility" = sens)
             for (i in 1:length(sens)) {
+                dof <- df. - sum(cs < sens[i])
                 p_values$p.values[i] <-
-                    round(pchisq(LRT, sum(cs > sens[i]), lower.tail = FALSE), 3)
-                p_values$df[i] <- sum(cs > sens[i])
+                    round(pchisq(LRT, dof, lower.tail = FALSE), 3)
+                p_values$df[i] <- dof
             }
             return(
                 list(
