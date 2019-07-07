@@ -18,9 +18,7 @@ anova.ltm <-
         LRT <- -2 * (L0 - L1)
         attributes(LRT) <- NULL
         if (LRT < 0)
-            warning(
-                "either the two models are not nested or the model represented by 'object2' fell on a local maxima.\n"
-            )
+            warning( "either the two models are not nested or the model represented by 'object2' fell on a local maxima.\n" )
         p.value <- pchisq(LRT, df., lower.tail = FALSE)
         
         out <-
@@ -45,13 +43,18 @@ anova.ltm <-
         }
         if (conditionalLR == TRUE) {
             cs <- coef(object2)[, 1]
-            sens <-
-                c(as.numeric(as.character(paste( "1e-", 1:8, sep = "" ))), 0)
+            sens <- c(as.numeric(as.character(paste( "1e-", 1:8, sep = "" ))), 0)
             p_values <- data.frame("Sensibility" = sens)
+            if(length(object2$constraint != 0)){
+                warning("When using constrained models we advise to check that the degrees of freedom have been calculated correctly.\n")
+            }
+            constraints <- length(object2$constraint[,1])
             for (i in 1:length(sens)) {
-                dof <- df. - sum(cs < sens[i])
-                p_values$p.values[i] <-
-                    round(pchisq(LRT, dof, lower.tail = FALSE), 3)
+                dof <- df. - sum(cs < sens[i]) + length(object2$constraint[object2$constraint[,2]==1 ,1])
+                if (dof < 0){
+                    stop( "Something wrong has happened.\n This implementation is still under development, please fill an issue on github (cobac/ltm) with the steps required to reproduce this error.\n" )
+                    }
+                p_values$p.values[i] <- round(pchisq(LRT, dof, lower.tail = FALSE), 3)
                 p_values$df[i] <- dof
             }
             return(
